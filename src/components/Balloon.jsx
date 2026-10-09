@@ -145,14 +145,14 @@ export default function Balloon({
       {/* Label beneath balloon if label exists */}
       {label && (
         <motion.div
-          className={`-mt-1 px-3 py-1 rounded-full text-center transition-all ${
+          className={`-mt-1 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-center transition-all max-w-[105px] sm:max-w-none ${
             isActive
               ? 'bg-stone-900 text-white font-bold ring-2 ring-stone-900 shadow-md'
-              : 'bg-white text-stone-800 font-semibold border-2 border-stone-900 shadow-[2px_2px_0px_#1C1917] group-hover:bg-amber-100'
+              : 'bg-white text-stone-800 font-semibold border-1.5 sm:border-2 border-stone-900 shadow-[2px_2px_0px_#1C1917] group-hover:bg-amber-100'
           }`}
           whileHover={{ scale: 1.05 }}
         >
-          <span className="font-display text-xs sm:text-sm whitespace-nowrap block">
+          <span className="font-display text-[10px] sm:text-xs md:text-sm whitespace-nowrap block truncate">
             {label}
           </span>
         </motion.div>

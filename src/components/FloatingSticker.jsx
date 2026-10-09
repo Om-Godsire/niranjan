@@ -8,10 +8,9 @@ import { WashiTape, PushPin } from './Doodles';
  * Supports continuous floating, drag, flinging with pointer velocity,
  * temporary exit from viewport, and spring return back to original position.
  */
-export default function FloatingSticker({ sticker, index }) {
+export default function FloatingSticker({ sticker, index, isAbsolute = true }) {
   const [isDragging, setIsDragging] = useState(false);
   const [imgError, setImgError] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -19,22 +18,11 @@ export default function FloatingSticker({ sticker, index }) {
   const [bobOffset, setBobOffset] = useState({ y: 0, rotate: sticker.rotation || 0 });
 
   useEffect(() => {
-    const handleResize = () => {
-      if (typeof window !== 'undefined') {
-        setIsMobile(window.innerWidth < 768);
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
     if (isDragging) return;
 
     let isMounted = true;
     const duration = sticker.floatDuration || 5.5;
-    const dist = sticker.floatDistance || 15;
+    const dist = sticker.floatDistance || 12;
     const baseRot = sticker.rotation || 0;
 
     const interval = setInterval(() => {
@@ -61,7 +49,7 @@ export default function FloatingSticker({ sticker, index }) {
     playPop(620);
 
     // Calculate throw physics from release velocity
-    const velocityFactor = 0.35; // Responsive fling momentum
+    const velocityFactor = 0.35;
     const targetX = x.get() + info.velocity.x * velocityFactor;
     const targetY = y.get() + info.velocity.y * velocityFactor;
 
@@ -79,7 +67,7 @@ export default function FloatingSticker({ sticker, index }) {
     });
   };
 
-  const pos = isMobile && sticker.mobilePosition ? sticker.mobilePosition : sticker.initialPosition;
+  const pos = sticker.initialPosition;
 
   return (
     <motion.div
@@ -89,8 +77,7 @@ export default function FloatingSticker({ sticker, index }) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       style={{
-        left: `${pos.x}%`,
-        top: `${pos.y}%`,
+        ...(isAbsolute ? { left: `${pos.x}%`, top: `${pos.y}%` } : {}),
         x,
         y,
         rotate: isDragging ? 0 : bobOffset.rotate,
@@ -109,7 +96,9 @@ export default function FloatingSticker({ sticker, index }) {
         transition: { type: "spring", stiffness: 400, damping: 15 }
       }}
       whileTap={{ cursor: "grabbing", scale: 0.96 }}
-      className={`absolute touch-none select-none transition-shadow ${
+      className={`${
+        isAbsolute ? 'absolute' : 'relative shrink-0'
+      } touch-none select-none transition-shadow ${
         isDragging ? 'z-50' : 'z-10'
       } group`}
     >
@@ -128,7 +117,7 @@ export default function FloatingSticker({ sticker, index }) {
             }}
             className="filter drop-shadow-sm"
           >
-            <svg width="42" height="52" viewBox="0 0 100 120" fill="none">
+            <svg width="40" height="50" viewBox="0 0 100 120" fill="none">
               <path
                 d="M 50 6 C 78 6, 96 30, 96 60 C 96 86, 68 108, 54 112 L 50 113 L 46 112 C 32 108, 4 86, 4 60 C 4 30, 22 6, 50 6 Z"
                 fill={sticker.balloonColor || "#BAE6FD"}
@@ -147,16 +136,16 @@ export default function FloatingSticker({ sticker, index }) {
       )}
 
       {/* Main Sticker Card (Polaroid / Cutout style with white border) */}
-      <div className="relative bg-[#FFFDF9] p-2 sm:p-2.5 rounded-2xl border-2.5 border-stone-900 shadow-[4px_6px_0px_#1C1917] group-hover:shadow-[6px_9px_0px_#1C1917] transition-all duration-200 w-30 sm:w-36 lg:w-38">
+      <div className="relative bg-[#FFFDF9] p-2 sm:p-2.5 rounded-2xl border-2.5 border-stone-900 shadow-[4px_6px_0px_#1C1917] group-hover:shadow-[6px_9px_0px_#1C1917] transition-all duration-200 w-28 sm:w-34 lg:w-38">
         {/* Top Tape or Pushpin fastener */}
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
           {sticker.pinType === 'pin' ? (
-            <PushPin color="#EF4444" className="w-6 h-6 -mt-1 drop-shadow-xs" />
+            <PushPin color="#EF4444" className="w-5 h-5 -mt-0.5 drop-shadow-xs" />
           ) : (
             <WashiTape
               color={sticker.tapeColor || "#FEF08A"}
               rotate={`${sticker.tapeAngle || -3}deg`}
-              className="w-16 h-4"
+              className="w-14 h-3.5"
             />
           )}
         </div>
@@ -171,40 +160,40 @@ export default function FloatingSticker({ sticker, index }) {
               className="w-full h-full object-cover pointer-events-none"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center bg-gradient-to-b from-amber-100 to-orange-50 select-none">
-              <span className="text-3xl filter drop-shadow-xs">
-                {['🎂', '👑', '😎', '✨', '🎈'][index % 5]}
+            <div className="w-full h-full flex flex-col items-center justify-center p-1.5 text-center bg-gradient-to-b from-amber-100 to-orange-50 select-none">
+              <span className="text-2xl filter drop-shadow-xs">
+                {['🎂', '👑', '😎', '✨', '🎈', '⚡'][index % 6]}
               </span>
-              <span className="font-display font-bold text-xs text-stone-900 mt-1">
+              <span className="font-display font-bold text-[11px] text-stone-900 mt-0.5">
                 Niranjan
               </span>
-              <span className="font-hand text-[11px] text-amber-800 font-bold">
+              <span className="font-hand text-[10px] text-amber-800 font-bold">
                 Photo #{index + 1}
               </span>
             </div>
           )}
 
           {/* Sparkle sticker overlay badge */}
-          <div className="absolute bottom-1.5 right-1.5 bg-yellow-300 text-stone-900 text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-stone-900 shadow-xs flex items-center gap-0.5">
+          <div className="absolute bottom-1 right-1 bg-yellow-300 text-stone-900 text-[9px] font-bold px-1.5 py-0.2 rounded-md border border-stone-900 shadow-xs flex items-center gap-0.5">
             <span>✨</span>
           </div>
         </div>
 
         {/* Handwritten Label underneath photo */}
-        <div className="mt-2 text-center">
+        <div className="mt-1.5 text-center">
           <div className="inline-block bg-amber-100/70 px-2 py-0.5 rounded-full border border-stone-800/40">
-            <span className="font-display font-bold text-xs text-stone-900 block leading-tight">
+            <span className="font-display font-bold text-[10px] sm:text-xs text-stone-900 block leading-tight">
               {sticker.badge}
             </span>
           </div>
-          <p className="font-hand text-stone-600 text-xs font-bold mt-0.5 truncate">
+          <p className="font-hand text-stone-600 text-[11px] font-bold mt-0.5 truncate">
             {sticker.subtext}
           </p>
         </div>
 
         {/* Little drag hint on hover */}
         <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-          <span className="bg-stone-900 text-white text-[10px] font-display font-bold px-2 py-0.5 rounded-full shadow-md">
+          <span className="bg-stone-900 text-white text-[9px] font-display font-bold px-2 py-0.5 rounded-full shadow-md">
             ✋ Throw me!
           </span>
         </div>
